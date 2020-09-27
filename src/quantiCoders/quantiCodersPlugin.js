@@ -88,11 +88,18 @@ class quantiCodersPlugin {
         const slowestXerox = Math.max(firstXerox, secondXerox);
 
         // общая производительность за 1 секунду и количество секунд нужных для получения всех копий (береться на 1 копию меньше потому что ее делает только быстрый ксерокс)
-        const performance = 1 / fastestXerox + 1 / slowestXerox;
-        const seconds = (copies - 1) / performance;
-    
+        const performance = (1 / fastestXerox + 1 / slowestXerox).toFixed(10);
+        const seconds = ((copies - 1) / performance).toFixed(10);
+        
+        // округление по модулю для общих случаев и разница для определения времени простоя медленного принтера
+        const moduleRound = Math.ceil(seconds / fastestXerox) * fastestXerox;
+        const difference = (moduleRound - seconds) / (1 / performance);
+
+        // если медленный принтер простаивает больше коэффициента 1 то это вносит коррекцию в результат
+        if(difference > 1) return ((moduleRound / slowestXerox)^0) * slowestXerox + fastestXerox;
+
         // возвращение seconds по модулю (потому что общая производительность дает максимально возможную скорость, но Джимни не может печатать пол листка в одном ксероксе а остальное в другом) + время на первую копию
-        return Math.ceil(seconds / fastestXerox) * fastestXerox + fastestXerox;
+        return moduleRound + fastestXerox;
     }
 
     quantiCodersEmployees(budget) {
